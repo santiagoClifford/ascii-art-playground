@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ASCII Art Playground</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>ASCII Art Playground</h1>
+    <p class="subtitle">Dibuja, escribe y posiciona caracteres. Exporta como texto o PNG.</p>
+  </header>
+
+  <main class="layout">
+    <aside class="panel">
+      <section class="group">
+        <h2>Lienzo</h2>
+        <label>
+          Columnas
+          <input type="number" id="colsInput" min="4" max="200" value="60" />
+        </label>
+        <label>
+          Filas
+          <input type="number" id="rowsInput" min="2" max="120" value="24" />
+        </label>
+        <button id="resizeBtn">Redimensionar</button>
+      </section>
+
+      <section class="group">
+        <h2>Herramienta</h2>
+        <div class="tool-toggle">
+          <button id="modeTypeBtn" class="tool-btn active" data-mode="type">✍️ Escribir</button>
+          <button id="modePaintBtn" class="tool-btn" data-mode="paint">🖌️ Pintar</button>
+          <button id="modeEraseBtn" class="tool-btn" data-mode="erase">🧹 Borrar</button>
+        </div>
+        <p class="hint" id="modeHint">Haz clic en una celda y escribe con el teclado. Usa las flechas para moverte.</p>
+      </section>
+
+      <section class="group">
+        <h2>Pincel actual</h2>
+        <div class="brush-row">
+          <input type="text" id="brushInput" maxlength="1" value="#" />
+          <span class="brush-preview" id="brushPreview">#</span>
+        </div>
+        <div class="palette" id="palette"></div>
+      </section>
+
+      <section class="group">
+        <h2>Apariencia</h2>
+        <label>
+          Tamaño de fuente (px)
+          <input type="range" id="fontSizeInput" min="8" max="32" value="16" />
+        </label>
+        <label>
+          Color de texto
+          <input type="color" id="fgColorInput" value="#00ff66" />
+        </label>
+        <label>
+          Color de fondo
+          <input type="color" id="bgColorInput" value="#0b0f14" />
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="transparentBgInput" />
+          Fondo transparente en PNG
+        </label>
+      </section>
+
+      <section class="group">
+        <h2>Acciones</h2>
+        <div class="actions-row">
+          <button id="undoBtn" title="Deshacer">↩️ Deshacer</button>
+          <button id="redoBtn" title="Rehacer">↪️ Rehacer</button>
+        </div>
+        <button id="clearBtn" class="danger">🗑️ Limpiar lienzo</button>
+      </section>
+
+      <section class="group">
+        <h2>Exportar</h2>
+        <button id="copyTextBtn">📋 Copiar como texto</button>
+        <button id="downloadTxtBtn">⬇️ Descargar .txt</button>
+        <button id="downloadPngBtn">🖼️ Descargar .png</button>
+      </section>
+    </aside>
+
+    <section class="canvas-wrap">
+      <div id="grid" class="grid" tabindex="0"></div>
+    </section>
+  </main>
+
+  <textarea id="clipboardHelper" aria-hidden="true"></textarea>
+
+  <script src="app.js"></script>
+</body>
+</html>

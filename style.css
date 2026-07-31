@@ -1,0 +1,234 @@
+:root {
+  --bg: #12161c;
+  --panel-bg: #1a2029;
+  --border: #2a3240;
+  --text: #e6edf3;
+  --muted: #8b96a5;
+  --accent: #4f8cff;
+  --danger: #ff5c5c;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topbar {
+  padding: 20px 24px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.subtitle {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.layout {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+.panel {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+.group h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.group label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.checkbox-label {
+  justify-content: flex-start !important;
+}
+
+input[type="number"],
+input[type="text"],
+input[type="color"] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 4px 8px;
+  width: 90px;
+}
+
+input[type="range"] {
+  flex: 1;
+}
+
+button {
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  width: 100%;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.tool-toggle {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tool-btn {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 12px;
+}
+
+.tool-btn.active {
+  border-color: var(--accent);
+  background: rgba(79, 140, 255, 0.15);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.brush-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+#brushInput {
+  width: 50px;
+  text-align: center;
+  font-family: "Courier New", monospace;
+  font-size: 16px;
+}
+
+.brush-preview {
+  font-family: "Courier New", monospace;
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.palette {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+}
+
+.palette button {
+  padding: 6px 0;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  width: auto;
+}
+
+.actions-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.actions-row button {
+  width: auto;
+  flex: 1;
+}
+
+#downloadTxtBtn,
+#downloadPngBtn,
+#copyTextBtn {
+  margin-bottom: 8px;
+}
+
+.canvas-wrap {
+  flex: 1;
+  overflow: auto;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.grid {
+  display: inline-grid;
+  outline: none;
+  user-select: none;
+  border: 1px solid var(--border);
+}
+
+.cell {
+  font-family: "Courier New", "Consolas", monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: pre;
+  cursor: pointer;
+}
+
+.cell.cursor {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+#clipboardHelper {
+  position: fixed;
+  top: -1000px;
+  left: -1000px;
+  opacity: 0;
+}
