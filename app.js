@@ -8,6 +8,9 @@
     resizeBtn: document.getElementById("resizeBtn"),
     wallpaperPresetInput: document.getElementById("wallpaperPresetInput"),
     applyWallpaperBtn: document.getElementById("applyWallpaperBtn"),
+    aspectRatioInput: document.getElementById("aspectRatioInput"),
+    lockAspectInput: document.getElementById("lockAspectInput"),
+    aspectHint: document.getElementById("aspectHint"),
     modeTypeBtn: document.getElementById("modeTypeBtn"),
     modePaintBtn: document.getElementById("modePaintBtn"),
     modeEraseBtn: document.getElementById("modeEraseBtn"),
@@ -96,6 +99,8 @@
         referenceFit: el.referenceFitInput.value,
         exportPreset: state.exportPreset,
         wallpaperPreset: el.wallpaperPresetInput.value,
+        aspectRatio: el.aspectRatioInput.value,
+        lockAspect: el.lockAspectInput.checked,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (err) {
@@ -200,6 +205,45 @@
 
   function cellHeight() {
     return Math.round(state.fontSize * 1.15);
+  }
+
+  // A character cell is taller than it is wide, so a grid of NxN cells looks
+  // like a tall rectangle rather than a square. Every conversion between an
+  // aspect ratio and a column/row count has to divide that shape out.
+  function cellAspect() {
+    return cellWidth() / cellHeight();
+  }
+
+  function currentRatio() {
+    const value = el.aspectRatioInput.value;
+    if (!value) return null;
+    const [w, h] = value.split(":").map(Number);
+    return w / h;
+  }
+
+  function rowsForCols(cols, ratio) {
+    return Math.max(2, Math.min(MAX_ROWS, Math.round((cols * cellAspect()) / ratio)));
+  }
+
+  function colsForRows(rows, ratio) {
+    return Math.max(4, Math.min(MAX_COLS, Math.round((rows * ratio) / cellAspect())));
+  }
+
+  // Keeps the paired input in step while the lock is on. `source` is the field
+  // the user just edited, so the other one is the one that gives way.
+  function syncAspectInputs(source) {
+    const ratio = currentRatio();
+    if (!ratio || !el.lockAspectInput.checked) return;
+
+    if (source === "rows") {
+      const rows = Number(el.rowsInput.value);
+      if (!rows) return;
+      el.colsInput.value = colsForRows(rows, ratio);
+    } else {
+      const cols = Number(el.colsInput.value);
+      if (!cols) return;
+      el.rowsInput.value = rowsForCols(cols, ratio);
+    }
   }
 
   function renderGrid() {
@@ -538,6 +582,35 @@
     resizeGrid(Number(el.colsInput.value), Number(el.rowsInput.value));
   });
 
+  el.colsInput.addEventListener("input", () => syncAspectInputs("cols"));
+  el.rowsInput.addEventListener("input", () => syncAspectInputs("rows"));
+
+  el.aspectRatioInput.addEventListener("change", () => {
+    const ratio = currentRatio();
+    if (ratio) el.rowsInput.value = rowsForCols(Number(el.colsInput.value), ratio);
+    updateAspectHint();
+    saveState();
+  });
+
+  el.lockAspectInput.addEventListener("change", () => {
+    syncAspectInputs("cols");
+    updateAspectHint();
+    saveState();
+  });
+
+  function updateAspectHint() {
+    const ratio = currentRatio();
+    if (!ratio) {
+      el.aspectHint.textContent =
+        "Elige una proporción para que las filas se calculen solas (los caracteres son más altos que anchos).";
+      return;
+    }
+    const label = el.aspectRatioInput.value;
+    el.aspectHint.textContent = el.lockAspectInput.checked
+      ? `Bloqueado en ${label}: al cambiar un lado, el otro se ajusta solo.`
+      : `Filas ajustadas a ${label}. Marca el candado para mantenerlo al redimensionar.`;
+  }
+
   el.applyWallpaperBtn.addEventListener("click", () => {
     const value = el.wallpaperPresetInput.value;
     if (!value) {
@@ -546,18 +619,33 @@
       return;
     }
     const [w, h] = value.split("x").map(Number);
-    const ar = w / h;
-    const cw = cellWidth();
-    const ch = cellHeight();
     const cols = state.cols;
-    const rows = Math.max(2, Math.min(MAX_ROWS, Math.round((cols * cw) / (ar * ch))));
+    el.aspectRatioInput.value = ratioLabelFor(w, h);
+    updateAspectHint();
     state.exportPreset = { width: w, height: h };
-    resizeGrid(cols, rows);
+    resizeGrid(cols, rowsForCols(cols, w / h));
   });
+
+  // Maps a pixel resolution onto one of the ratio options so the two selectors
+  // agree; falls back to "Libre" for a resolution with no matching entry.
+  function ratioLabelFor(w, h) {
+    const target = w / h;
+    const options = Array.from(el.aspectRatioInput.options)
+      .map((o) => o.value)
+      .filter(Boolean);
+    const match = options.find((value) => {
+      const [ow, oh] = value.split(":").map(Number);
+      return Math.abs(ow / oh - target) < 0.01;
+    });
+    return match || "";
+  }
 
   el.fontSizeInput.addEventListener("input", () => {
     state.fontSize = Number(el.fontSizeInput.value);
     applyAppearance();
+    // Cell proportions are derived from the font size, so a locked ratio needs
+    // a fresh row count to stay true.
+    syncAspectInputs("cols");
     saveState();
   });
 
@@ -787,6 +875,8 @@
       if (saved.referenceOpacity) el.referenceOpacityInput.value = saved.referenceOpacity;
       if (saved.referenceFit) el.referenceFitInput.value = saved.referenceFit;
       if (saved.wallpaperPreset) el.wallpaperPresetInput.value = saved.wallpaperPreset;
+      if (saved.aspectRatio) el.aspectRatioInput.value = saved.aspectRatio;
+      el.lockAspectInput.checked = !!saved.lockAspect;
     } else {
       state.cols = Number(el.colsInput.value);
       state.rows = Number(el.rowsInput.value);
@@ -813,6 +903,7 @@
 
     buildGridDom();
     setMode(saved && saved.mode ? saved.mode : "type");
+    updateAspectHint();
     updatePositionReadout();
     pushHistory();
   }

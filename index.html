@@ -69,6 +69,24 @@
               <input type="number" id="rowsInput" min="2" max="240" value="24" />
             </label>
           </div>
+          <label class="field">
+            <span>Relación de aspecto</span>
+            <select id="aspectRatioInput">
+              <option value="">Libre</option>
+              <option value="16:9">16:9 — horizontal</option>
+              <option value="16:10">16:10 — horizontal</option>
+              <option value="21:9">21:9 — ultrawide</option>
+              <option value="4:3">4:3 — clásico</option>
+              <option value="1:1">1:1 — cuadrado</option>
+              <option value="3:4">3:4 — vertical</option>
+              <option value="9:16">9:16 — celular</option>
+            </select>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="lockAspectInput" />
+            <span>🔒 Bloquear proporción</span>
+          </label>
+          <p class="hint" id="aspectHint">Los caracteres son más altos que anchos, así que las filas se calculan para que el lienzo se vea con la proporción real.</p>
           <button id="resizeBtn">Redimensionar</button>
 
           <div class="divider"></div>
