@@ -160,6 +160,26 @@ button.danger:hover {
   font-weight: 600;
 }
 
+.move-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.move-grid button {
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.move-center-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 16px;
+}
+
 .brush-row {
   display: flex;
   align-items: center;

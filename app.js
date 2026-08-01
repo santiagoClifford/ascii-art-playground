@@ -33,6 +33,12 @@
     posColTotal: document.getElementById("posColTotal"),
     posRowOffset: document.getElementById("posRowOffset"),
     posColOffset: document.getElementById("posColOffset"),
+    moveUpBtn: document.getElementById("moveUpBtn"),
+    moveDownBtn: document.getElementById("moveDownBtn"),
+    moveLeftBtn: document.getElementById("moveLeftBtn"),
+    moveRightBtn: document.getElementById("moveRightBtn"),
+    moveStepInput: document.getElementById("moveStepInput"),
+    centerContentBtn: document.getElementById("centerContentBtn"),
     referenceInput: document.getElementById("referenceInput"),
     referenceOpacityInput: document.getElementById("referenceOpacityInput"),
     referenceFitInput: document.getElementById("referenceFitInput"),
@@ -292,6 +298,53 @@
       });
       el.palette.appendChild(btn);
     });
+  }
+
+  function getContentBounds() {
+    let minR = null;
+    let maxR = null;
+    let minC = null;
+    let maxC = null;
+    for (let r = 0; r < state.rows; r++) {
+      for (let c = 0; c < state.cols; c++) {
+        if (state.cells[r][c] === " ") continue;
+        if (minR === null || r < minR) minR = r;
+        if (maxR === null || r > maxR) maxR = r;
+        if (minC === null || c < minC) minC = c;
+        if (maxC === null || c > maxC) maxC = c;
+      }
+    }
+    if (minR === null) return null;
+    return { minR, maxR, minC, maxC };
+  }
+
+  function shiftContent(dr, dc) {
+    if (dr === 0 && dc === 0) return;
+    const newCells = makeEmptyGrid(state.rows, state.cols);
+    for (let r = 0; r < state.rows; r++) {
+      for (let c = 0; c < state.cols; c++) {
+        const ch = state.cells[r][c];
+        if (ch === " ") continue;
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < state.rows && nc >= 0 && nc < state.cols) {
+          newCells[nr][nc] = ch;
+        }
+      }
+    }
+    state.cells = newCells;
+    renderGrid();
+    pushHistory();
+  }
+
+  function centerContent() {
+    const bounds = getContentBounds();
+    if (!bounds) return;
+    const contentRows = bounds.maxR - bounds.minR + 1;
+    const contentCols = bounds.maxC - bounds.minC + 1;
+    const targetMinR = Math.floor((state.rows - contentRows) / 2);
+    const targetMinC = Math.floor((state.cols - contentCols) / 2);
+    shiftContent(targetMinR - bounds.minR, targetMinC - bounds.minC);
   }
 
   function paintAt(r, c) {
@@ -584,6 +637,16 @@
 
   el.undoBtn.addEventListener("click", undo);
   el.redoBtn.addEventListener("click", redo);
+
+  function moveStep() {
+    return Math.max(1, Math.min(50, Number(el.moveStepInput.value) || 1));
+  }
+
+  el.moveUpBtn.addEventListener("click", () => shiftContent(-moveStep(), 0));
+  el.moveDownBtn.addEventListener("click", () => shiftContent(moveStep(), 0));
+  el.moveLeftBtn.addEventListener("click", () => shiftContent(0, -moveStep()));
+  el.moveRightBtn.addEventListener("click", () => shiftContent(0, moveStep()));
+  el.centerContentBtn.addEventListener("click", centerContent);
 
   el.clearBtn.addEventListener("click", () => {
     if (!confirm("¿Limpiar todo el lienzo?")) return;

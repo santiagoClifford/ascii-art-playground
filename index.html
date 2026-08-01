@@ -63,6 +63,27 @@
       </section>
 
       <section class="group">
+        <h2>Mover contenido</h2>
+        <div class="move-grid">
+          <span></span>
+          <button id="moveUpBtn" title="Subir">▲</button>
+          <span></span>
+          <button id="moveLeftBtn" title="Izquierda">◀</button>
+          <span class="move-center-icon">✥</span>
+          <button id="moveRightBtn" title="Derecha">▶</button>
+          <span></span>
+          <button id="moveDownBtn" title="Bajar">▼</button>
+          <span></span>
+        </div>
+        <label>
+          Paso
+          <input type="number" id="moveStepInput" min="1" max="50" value="1" />
+        </label>
+        <button id="centerContentBtn">🎯 Centrar contenido</button>
+        <p class="hint">Mueve o centra todo lo que ya dibujaste/pegaste, por ejemplo para ajustar un fondo de pantalla que no quedó centrado.</p>
+      </section>
+
+      <section class="group">
         <h2>Pincel actual</h2>
         <div class="brush-row">
           <input type="text" id="brushInput" maxlength="1" value="#" />
