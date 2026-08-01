@@ -271,6 +271,7 @@
 
   el.grid.addEventListener("keydown", (e) => {
     if (state.mode !== "type") return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
 
     const { r, c } = state.cursor;
 
