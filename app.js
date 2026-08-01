@@ -46,6 +46,12 @@
     referenceImage: document.getElementById("referenceImage"),
   };
 
+  // Each cell is its own DOM node, so the grid rebuild cost scales with
+  // cols * rows; 400x240 (~96k cells) rebuilds in roughly 1.4s, which is the
+  // most that still feels acceptable for an occasional resize.
+  const MAX_COLS = 400;
+  const MAX_ROWS = 240;
+
   const PALETTE_CHARS = [
     "#", "@", "*", ".", ":", "-", "+", "=",
     "|", "/", "\\", "O", "o", "x", "%", "&",
@@ -509,8 +515,8 @@
   });
 
   function resizeGrid(cols, rows) {
-    const newCols = Math.max(4, Math.min(200, cols || state.cols));
-    const newRows = Math.max(2, Math.min(120, rows || state.rows));
+    const newCols = Math.max(4, Math.min(MAX_COLS, cols || state.cols));
+    const newRows = Math.max(2, Math.min(MAX_ROWS, rows || state.rows));
     const newGrid = makeEmptyGrid(newRows, newCols);
     for (let r = 0; r < Math.min(newRows, state.rows); r++) {
       for (let c = 0; c < Math.min(newCols, state.cols); c++) {
@@ -544,7 +550,7 @@
     const cw = cellWidth();
     const ch = cellHeight();
     const cols = state.cols;
-    const rows = Math.max(2, Math.min(120, Math.round((cols * cw) / (ar * ch))));
+    const rows = Math.max(2, Math.min(MAX_ROWS, Math.round((cols * cw) / (ar * ch))));
     state.exportPreset = { width: w, height: h };
     resizeGrid(cols, rows);
   });
