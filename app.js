@@ -59,6 +59,58 @@
     referenceVisible: false,
   };
 
+  const STORAGE_KEY = "ascii-art-playground:state:v1";
+  const REFERENCE_STORAGE_KEY = "ascii-art-playground:reference:v1";
+  function saveState() {
+    try {
+      const payload = {
+        cols: state.cols,
+        rows: state.rows,
+        cells: state.cells,
+        fontSize: state.fontSize,
+        fg: state.fg,
+        bg: state.bg,
+        brush: state.brush,
+        mode: state.mode,
+        referenceVisible: state.referenceVisible,
+        referenceOpacity: el.referenceOpacityInput.value,
+        referenceFit: el.referenceFitInput.value,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (err) {
+      // localStorage unavailable or quota exceeded; autosave is best-effort
+    }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function saveReferenceImage(dataUrl) {
+    try {
+      if (dataUrl) {
+        localStorage.setItem(REFERENCE_STORAGE_KEY, dataUrl);
+      } else {
+        localStorage.removeItem(REFERENCE_STORAGE_KEY);
+      }
+    } catch (err) {
+      // image too large for localStorage quota; skip persisting it
+    }
+  }
+
+  function loadReferenceImage() {
+    try {
+      return localStorage.getItem(REFERENCE_STORAGE_KEY);
+    } catch (err) {
+      return null;
+    }
+  }
+
   function makeEmptyGrid(rows, cols) {
     return Array.from({ length: rows }, () => Array.from({ length: cols }, () => " "));
   }
@@ -73,6 +125,7 @@
     if (state.history.length > 100) state.history.shift();
     state.historyIndex = state.history.length - 1;
     updateHistoryButtons();
+    saveState();
   }
 
   function updateHistoryButtons() {
@@ -86,6 +139,7 @@
     state.cells = cloneGrid(state.history[state.historyIndex]);
     renderGrid();
     updateHistoryButtons();
+    saveState();
   }
 
   function redo() {
@@ -94,6 +148,7 @@
     state.cells = cloneGrid(state.history[state.historyIndex]);
     renderGrid();
     updateHistoryButtons();
+    saveState();
   }
 
   function buildGridDom() {
@@ -333,10 +388,14 @@
     const v = el.brushInput.value.slice(-1) || " ";
     state.brush = v;
     el.brushPreview.textContent = v === " " ? "␣" : v;
+    saveState();
   });
 
   [el.modeTypeBtn, el.modePaintBtn, el.modeEraseBtn].forEach((btn) => {
-    btn.addEventListener("click", () => setMode(btn.dataset.mode));
+    btn.addEventListener("click", () => {
+      setMode(btn.dataset.mode);
+      saveState();
+    });
   });
 
   el.resizeBtn.addEventListener("click", () => {
@@ -360,16 +419,19 @@
   el.fontSizeInput.addEventListener("input", () => {
     state.fontSize = Number(el.fontSizeInput.value);
     applyAppearance();
+    saveState();
   });
 
   el.fgColorInput.addEventListener("input", () => {
     state.fg = el.fgColorInput.value;
     applyAppearance();
+    saveState();
   });
 
   el.bgColorInput.addEventListener("input", () => {
     state.bg = el.bgColorInput.value;
     applyAppearance();
+    saveState();
   });
 
   // ---- Reference image ----
@@ -383,18 +445,22 @@
       state.referenceVisible = true;
       el.referenceImage.classList.add("visible");
       applyAppearance();
+      saveReferenceImage(reader.result);
+      saveState();
     };
     reader.readAsDataURL(file);
   });
 
   el.referenceOpacityInput.addEventListener("input", () => {
     el.referenceImage.style.opacity = Number(el.referenceOpacityInput.value) / 100;
+    saveState();
   });
 
   el.referenceFitInput.addEventListener("change", () => {
     el.referenceImage.classList.remove("fit-cover", "fit-stretch");
     if (el.referenceFitInput.value === "cover") el.referenceImage.classList.add("fit-cover");
     if (el.referenceFitInput.value === "stretch") el.referenceImage.classList.add("fit-stretch");
+    saveState();
   });
 
   el.removeReferenceBtn.addEventListener("click", () => {
@@ -403,6 +469,8 @@
     el.referenceImage.classList.remove("visible");
     state.referenceVisible = false;
     applyAppearance();
+    saveReferenceImage(null);
+    saveState();
   });
 
   el.referenceImage.style.opacity = Number(el.referenceOpacityInput.value) / 100;
@@ -443,6 +511,8 @@
     renderGrid();
     pushHistory();
   });
+
+  window.addEventListener("beforeunload", () => saveState());
 
   function gridToText() {
     return state.cells.map((row) => row.join("").replace(/\s+$/g, "")).join("\n");
@@ -530,15 +600,52 @@
 
   // ---- Init ----
   function init() {
-    state.cols = Number(el.colsInput.value);
-    state.rows = Number(el.rowsInput.value);
-    state.fontSize = Number(el.fontSizeInput.value);
-    state.fg = el.fgColorInput.value;
-    state.bg = el.bgColorInput.value;
-    state.cells = makeEmptyGrid(state.rows, state.cols);
+    const saved = loadState();
+
+    if (saved) {
+      state.cols = saved.cols;
+      state.rows = saved.rows;
+      state.fontSize = saved.fontSize;
+      state.fg = saved.fg;
+      state.bg = saved.bg;
+      state.brush = saved.brush || "#";
+      state.cells = saved.cells;
+      state.referenceVisible = !!saved.referenceVisible;
+
+      el.colsInput.value = state.cols;
+      el.rowsInput.value = state.rows;
+      el.fontSizeInput.value = state.fontSize;
+      el.fgColorInput.value = state.fg;
+      el.bgColorInput.value = state.bg;
+      el.brushInput.value = state.brush;
+      if (saved.referenceOpacity) el.referenceOpacityInput.value = saved.referenceOpacity;
+      if (saved.referenceFit) el.referenceFitInput.value = saved.referenceFit;
+    } else {
+      state.cols = Number(el.colsInput.value);
+      state.rows = Number(el.rowsInput.value);
+      state.fontSize = Number(el.fontSizeInput.value);
+      state.fg = el.fgColorInput.value;
+      state.bg = el.bgColorInput.value;
+      state.cells = makeEmptyGrid(state.rows, state.cols);
+    }
+
     buildPalette();
+    el.brushPreview.textContent = state.brush === " " ? "␣" : state.brush;
+
+    const savedImage = loadReferenceImage();
+    if (savedImage && state.referenceVisible) {
+      el.referenceImage.src = savedImage;
+      el.referenceImage.classList.add("visible");
+      el.referenceImage.classList.remove("fit-cover", "fit-stretch");
+      if (el.referenceFitInput.value === "cover") el.referenceImage.classList.add("fit-cover");
+      if (el.referenceFitInput.value === "stretch") el.referenceImage.classList.add("fit-stretch");
+    } else {
+      state.referenceVisible = false;
+    }
+    el.referenceImage.style.opacity = Number(el.referenceOpacityInput.value) / 100;
+
     buildGridDom();
-    setMode("type");
+    setMode(saved && saved.mode ? saved.mode : "type");
     updatePositionReadout();
     pushHistory();
   }
