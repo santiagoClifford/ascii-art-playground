@@ -12,6 +12,7 @@
     modeHint: document.getElementById("modeHint"),
     brushInput: document.getElementById("brushInput"),
     brushPreview: document.getElementById("brushPreview"),
+    brushSizeInput: document.getElementById("brushSizeInput"),
     palette: document.getElementById("palette"),
     fontSizeInput: document.getElementById("fontSizeInput"),
     fgColorInput: document.getElementById("fgColorInput"),
@@ -49,6 +50,7 @@
     cells: [],
     mode: "type",
     brush: "#",
+    brushSize: 1,
     fontSize: 16,
     fg: "#00ff66",
     bg: "#0b0f14",
@@ -72,6 +74,7 @@
         fg: state.fg,
         bg: state.bg,
         brush: state.brush,
+        brushSize: state.brushSize,
         mode: state.mode,
         referenceVisible: state.referenceVisible,
         referenceOpacity: el.referenceOpacityInput.value,
@@ -291,6 +294,16 @@
     setCell(r, c, ch);
   }
 
+  function paintBrush(r, c) {
+    const size = state.brushSize;
+    const offset = Math.floor((size - 1) / 2);
+    for (let dr = 0; dr < size; dr++) {
+      for (let dc = 0; dc < size; dc++) {
+        paintAt(r - offset + dr, c - offset + dc);
+      }
+    }
+  }
+
   function paintLine(from, to) {
     let x0 = from.c;
     let y0 = from.r;
@@ -303,7 +316,7 @@
     let err = dx + dy;
 
     while (true) {
-      paintAt(y0, x0);
+      paintBrush(y0, x0);
       if (x0 === x1 && y0 === y1) break;
       const e2 = 2 * err;
       if (e2 >= dy) {
@@ -333,7 +346,7 @@
       pushHistory();
     } else {
       state.isMouseDown = true;
-      paintAt(r, c);
+      paintBrush(r, c);
       state.lastPaintPoint = { r, c };
     }
     el.grid.focus();
@@ -346,7 +359,7 @@
     if (!target) return;
     const r = Number(target.dataset.r);
     const c = Number(target.dataset.c);
-    paintAt(r, c);
+    paintBrush(r, c);
     state.lastPaintPoint = { r, c };
   });
 
@@ -421,6 +434,12 @@
     const v = el.brushInput.value.slice(-1) || " ";
     state.brush = v;
     el.brushPreview.textContent = v === " " ? "␣" : v;
+    saveState();
+  });
+
+  el.brushSizeInput.addEventListener("input", () => {
+    const v = Math.max(1, Math.min(12, Number(el.brushSizeInput.value) || 1));
+    state.brushSize = v;
     saveState();
   });
 
@@ -642,6 +661,7 @@
       state.fg = saved.fg;
       state.bg = saved.bg;
       state.brush = saved.brush || "#";
+      state.brushSize = saved.brushSize || 1;
       state.cells = saved.cells;
       state.referenceVisible = !!saved.referenceVisible;
 
@@ -651,6 +671,7 @@
       el.fgColorInput.value = state.fg;
       el.bgColorInput.value = state.bg;
       el.brushInput.value = state.brush;
+      el.brushSizeInput.value = state.brushSize;
       if (saved.referenceOpacity) el.referenceOpacityInput.value = saved.referenceOpacity;
       if (saved.referenceFit) el.referenceFitInput.value = saved.referenceFit;
     } else {
