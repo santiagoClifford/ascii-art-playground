@@ -30,6 +30,11 @@
     posColTotal: document.getElementById("posColTotal"),
     posRowOffset: document.getElementById("posRowOffset"),
     posColOffset: document.getElementById("posColOffset"),
+    referenceInput: document.getElementById("referenceInput"),
+    referenceOpacityInput: document.getElementById("referenceOpacityInput"),
+    referenceFitInput: document.getElementById("referenceFitInput"),
+    removeReferenceBtn: document.getElementById("removeReferenceBtn"),
+    referenceImage: document.getElementById("referenceImage"),
   };
 
   const PALETTE_CHARS = [
@@ -51,6 +56,7 @@
     isMouseDown: false,
     history: [],
     historyIndex: -1,
+    referenceVisible: false,
   };
 
   function makeEmptyGrid(rows, cols) {
@@ -94,6 +100,7 @@
     el.grid.innerHTML = "";
     el.grid.style.gridTemplateColumns = `repeat(${state.cols}, ${cellWidth()}px)`;
     el.grid.style.gridTemplateRows = `repeat(${state.rows}, ${cellHeight()}px)`;
+    el.grid.style.background = state.referenceVisible ? "transparent" : state.bg;
 
     for (let r = 0; r < state.rows; r++) {
       for (let c = 0; c < state.cols; c++) {
@@ -105,7 +112,6 @@
         div.style.height = `${cellHeight()}px`;
         div.style.fontSize = `${state.fontSize}px`;
         div.style.color = state.fg;
-        div.style.background = state.bg;
         div.textContent = state.cells[r][c];
         el.grid.appendChild(div);
       }
@@ -188,7 +194,7 @@
       btn.classList.toggle("active", btn.dataset.mode === mode);
     });
     const hints = {
-      type: "Haz clic en una celda y escribe con el teclado. Usa las flechas para moverte.",
+      type: "Haz clic en una celda y escribe con el teclado. Usa las flechas para moverte. Pega (Ctrl+V) arte ASCII copiado desde otro lado.",
       paint: "Haz clic o arrastra sobre el lienzo para pintar con el pincel actual.",
       erase: "Haz clic o arrastra sobre el lienzo para borrar (espacio en blanco).",
     };
@@ -200,12 +206,12 @@
   function applyAppearance() {
     el.grid.style.gridTemplateColumns = `repeat(${state.cols}, ${cellWidth()}px)`;
     el.grid.style.gridTemplateRows = `repeat(${state.rows}, ${cellHeight()}px)`;
+    el.grid.style.background = state.referenceVisible ? "transparent" : state.bg;
     Array.from(el.grid.children).forEach((div) => {
       div.style.width = `${cellWidth()}px`;
       div.style.height = `${cellHeight()}px`;
       div.style.fontSize = `${state.fontSize}px`;
       div.style.color = state.fg;
-      div.style.background = state.bg;
     });
   }
 
@@ -363,6 +369,68 @@
   el.bgColorInput.addEventListener("input", () => {
     state.bg = el.bgColorInput.value;
     applyAppearance();
+  });
+
+  // ---- Reference image ----
+
+  el.referenceInput.addEventListener("change", () => {
+    const file = el.referenceInput.files && el.referenceInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      el.referenceImage.src = reader.result;
+      state.referenceVisible = true;
+      el.referenceImage.classList.add("visible");
+      applyAppearance();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  el.referenceOpacityInput.addEventListener("input", () => {
+    el.referenceImage.style.opacity = Number(el.referenceOpacityInput.value) / 100;
+  });
+
+  el.referenceFitInput.addEventListener("change", () => {
+    el.referenceImage.classList.remove("fit-cover", "fit-stretch");
+    if (el.referenceFitInput.value === "cover") el.referenceImage.classList.add("fit-cover");
+    if (el.referenceFitInput.value === "stretch") el.referenceImage.classList.add("fit-stretch");
+  });
+
+  el.removeReferenceBtn.addEventListener("click", () => {
+    el.referenceInput.value = "";
+    el.referenceImage.src = "";
+    el.referenceImage.classList.remove("visible");
+    state.referenceVisible = false;
+    applyAppearance();
+  });
+
+  el.referenceImage.style.opacity = Number(el.referenceOpacityInput.value) / 100;
+
+  // ---- Paste ASCII art ----
+
+  el.grid.addEventListener("paste", (e) => {
+    if (state.mode !== "type") return;
+    const text = (e.clipboardData || window.clipboardData).getData("text");
+    if (!text) return;
+    e.preventDefault();
+    const lines = text.replace(/\t/g, "    ").split(/\r\n|\r|\n/);
+    const startR = state.cursor.r;
+    const startC = state.cursor.c;
+    let lastR = startR;
+    let lastC = startC;
+    lines.forEach((line, li) => {
+      const r = startR + li;
+      if (r >= state.rows) return;
+      for (let ci = 0; ci < line.length; ci++) {
+        const c = startC + ci;
+        if (c >= state.cols) break;
+        setCell(r, c, line[ci]);
+        lastR = r;
+        lastC = Math.min(c + 1, state.cols - 1);
+      }
+    });
+    moveCursor(lastR, lastC);
+    pushHistory();
   });
 
   el.undoBtn.addEventListener("click", undo);

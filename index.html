@@ -34,7 +34,7 @@
           <button id="modePaintBtn" class="tool-btn" data-mode="paint">🖌️ Pintar</button>
           <button id="modeEraseBtn" class="tool-btn" data-mode="erase">🧹 Borrar</button>
         </div>
-        <p class="hint" id="modeHint">Haz clic en una celda y escribe con el teclado. Usa las flechas para moverte.</p>
+        <p class="hint" id="modeHint">Haz clic en una celda y escribe con el teclado. Usa las flechas para moverte. Pega (Ctrl+V) arte ASCII copiado desde otro lado.</p>
       </section>
 
       <section class="group" id="positionGroup">
@@ -56,6 +56,25 @@
           <span class="brush-preview" id="brushPreview">#</span>
         </div>
         <div class="palette" id="palette"></div>
+      </section>
+
+      <section class="group">
+        <h2>Imagen de referencia</h2>
+        <input type="file" id="referenceInput" accept="image/*" />
+        <label>
+          Opacidad
+          <input type="range" id="referenceOpacityInput" min="5" max="90" value="35" />
+        </label>
+        <label>
+          Ajuste
+          <select id="referenceFitInput">
+            <option value="contain">Contener</option>
+            <option value="cover">Cubrir</option>
+            <option value="stretch">Estirar</option>
+          </select>
+        </label>
+        <button id="removeReferenceBtn">🗑️ Quitar imagen</button>
+        <p class="hint">Se muestra detrás del lienzo como guía; no se incluye al exportar.</p>
       </section>
 
       <section class="group">
@@ -96,7 +115,10 @@
     </aside>
 
     <section class="canvas-wrap">
-      <div id="grid" class="grid" tabindex="0"></div>
+      <div id="canvasStage" class="canvas-stage">
+        <img id="referenceImage" class="reference-image" alt="" />
+        <div id="grid" class="grid" tabindex="0"></div>
+      </div>
     </section>
   </main>
 
