@@ -24,6 +24,12 @@
     downloadTxtBtn: document.getElementById("downloadTxtBtn"),
     downloadPngBtn: document.getElementById("downloadPngBtn"),
     clipboardHelper: document.getElementById("clipboardHelper"),
+    posRow: document.getElementById("posRow"),
+    posRowTotal: document.getElementById("posRowTotal"),
+    posCol: document.getElementById("posCol"),
+    posColTotal: document.getElementById("posColTotal"),
+    posRowOffset: document.getElementById("posRowOffset"),
+    posColOffset: document.getElementById("posColOffset"),
   };
 
   const PALETTE_CHARS = [
@@ -142,6 +148,38 @@
     state.cursor.r = Math.max(0, Math.min(state.rows - 1, r));
     state.cursor.c = Math.max(0, Math.min(state.cols - 1, c));
     renderGrid();
+    updatePositionReadout();
+  }
+
+  function updatePositionReadout() {
+    const { r, c } = state.cursor;
+    el.posRow.textContent = String(r + 1);
+    el.posRowTotal.textContent = String(state.rows);
+    el.posCol.textContent = String(c + 1);
+    el.posColTotal.textContent = String(state.cols);
+
+    const rowCenter = (state.rows - 1) / 2;
+    const colCenter = (state.cols - 1) / 2;
+    const rowDiff = r - rowCenter;
+    const colDiff = c - colCenter;
+
+    if (rowDiff === 0) {
+      el.posRowOffset.textContent = "Fila: centrada";
+      el.posRowOffset.classList.add("centered");
+    } else {
+      const dir = rowDiff > 0 ? "abajo" : "arriba";
+      el.posRowOffset.textContent = `Fila: ${Math.abs(rowDiff)} ${dir} del centro`;
+      el.posRowOffset.classList.remove("centered");
+    }
+
+    if (colDiff === 0) {
+      el.posColOffset.textContent = "Col: centrada";
+      el.posColOffset.classList.add("centered");
+    } else {
+      const dir = colDiff > 0 ? "derecha" : "izquierda";
+      el.posColOffset.textContent = `Col: ${Math.abs(colDiff)} ${dir} del centro`;
+      el.posColOffset.classList.remove("centered");
+    }
   }
 
   function setMode(mode) {
@@ -155,6 +193,7 @@
       erase: "Haz clic o arrastra sobre el lienzo para borrar (espacio en blanco).",
     };
     el.modeHint.textContent = hints[mode];
+    document.getElementById("positionGroup").style.display = mode === "type" ? "" : "none";
     renderGrid();
   }
 
@@ -307,6 +346,7 @@
     state.cells = newGrid;
     state.cursor = { r: 0, c: 0 };
     buildGridDom();
+    updatePositionReadout();
     pushHistory();
   });
 
@@ -430,6 +470,7 @@
     buildPalette();
     buildGridDom();
     setMode("type");
+    updatePositionReadout();
     pushHistory();
   }
 
