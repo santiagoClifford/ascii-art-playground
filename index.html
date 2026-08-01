@@ -25,6 +25,19 @@
           <input type="number" id="rowsInput" min="2" max="120" value="24" />
         </label>
         <button id="resizeBtn">Redimensionar</button>
+
+        <label>
+          Preset de fondo de pantalla
+          <select id="wallpaperPresetInput">
+            <option value="">Personalizado</option>
+            <option value="1366x768">PC 1366×768 (16:9)</option>
+            <option value="1920x1080">PC 1920×1080 (16:9)</option>
+            <option value="1080x1080">Cuadrado 1080×1080 (1:1)</option>
+            <option value="1080x1920">Celular 1080×1920 (9:16)</option>
+          </select>
+        </label>
+        <button id="applyWallpaperBtn">📐 Aplicar preset</button>
+        <p class="hint">Ajusta las filas para conservar la proporción y fija la resolución exacta al exportar el PNG.</p>
       </section>
 
       <section class="group">

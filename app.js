@@ -6,6 +6,8 @@
     colsInput: document.getElementById("colsInput"),
     rowsInput: document.getElementById("rowsInput"),
     resizeBtn: document.getElementById("resizeBtn"),
+    wallpaperPresetInput: document.getElementById("wallpaperPresetInput"),
+    applyWallpaperBtn: document.getElementById("applyWallpaperBtn"),
     modeTypeBtn: document.getElementById("modeTypeBtn"),
     modePaintBtn: document.getElementById("modePaintBtn"),
     modeEraseBtn: document.getElementById("modeEraseBtn"),
@@ -60,6 +62,7 @@
     historyIndex: -1,
     referenceVisible: false,
     lastPaintPoint: null,
+    exportPreset: null,
   };
 
   const STORAGE_KEY = "ascii-art-playground:state:v1";
@@ -79,6 +82,8 @@
         referenceVisible: state.referenceVisible,
         referenceOpacity: el.referenceOpacityInput.value,
         referenceFit: el.referenceFitInput.value,
+        exportPreset: state.exportPreset,
+        wallpaperPreset: el.wallpaperPresetInput.value,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (err) {
@@ -450,9 +455,9 @@
     });
   });
 
-  el.resizeBtn.addEventListener("click", () => {
-    const newCols = Math.max(4, Math.min(200, Number(el.colsInput.value) || state.cols));
-    const newRows = Math.max(2, Math.min(120, Number(el.rowsInput.value) || state.rows));
+  function resizeGrid(cols, rows) {
+    const newCols = Math.max(4, Math.min(200, cols || state.cols));
+    const newRows = Math.max(2, Math.min(120, rows || state.rows));
     const newGrid = makeEmptyGrid(newRows, newCols);
     for (let r = 0; r < Math.min(newRows, state.rows); r++) {
       for (let c = 0; c < Math.min(newCols, state.cols); c++) {
@@ -463,9 +468,32 @@
     state.cols = newCols;
     state.cells = newGrid;
     state.cursor = { r: 0, c: 0 };
+    el.colsInput.value = newCols;
+    el.rowsInput.value = newRows;
     buildGridDom();
     updatePositionReadout();
     pushHistory();
+  }
+
+  el.resizeBtn.addEventListener("click", () => {
+    resizeGrid(Number(el.colsInput.value), Number(el.rowsInput.value));
+  });
+
+  el.applyWallpaperBtn.addEventListener("click", () => {
+    const value = el.wallpaperPresetInput.value;
+    if (!value) {
+      state.exportPreset = null;
+      saveState();
+      return;
+    }
+    const [w, h] = value.split("x").map(Number);
+    const ar = w / h;
+    const cw = cellWidth();
+    const ch = cellHeight();
+    const cols = state.cols;
+    const rows = Math.max(2, Math.min(120, Math.round((cols * cw) / (ar * ch))));
+    state.exportPreset = { width: w, height: h };
+    resizeGrid(cols, rows);
   });
 
   el.fontSizeInput.addEventListener("input", () => {
@@ -605,11 +633,25 @@
   });
 
   el.downloadPngBtn.addEventListener("click", () => {
-    const cw = cellWidth();
-    const ch = cellHeight();
     const canvas = document.createElement("canvas");
-    canvas.width = cw * state.cols;
-    canvas.height = ch * state.rows;
+    let cw;
+    let ch;
+    let exportFontSize;
+
+    if (state.exportPreset) {
+      canvas.width = state.exportPreset.width;
+      canvas.height = state.exportPreset.height;
+      cw = canvas.width / state.cols;
+      ch = canvas.height / state.rows;
+      exportFontSize = ch * (state.fontSize / cellHeight());
+    } else {
+      cw = cellWidth();
+      ch = cellHeight();
+      canvas.width = cw * state.cols;
+      canvas.height = ch * state.rows;
+      exportFontSize = state.fontSize;
+    }
+
     const ctx = canvas.getContext("2d");
 
     if (!el.transparentBgInput.checked) {
@@ -618,7 +660,7 @@
     }
 
     ctx.fillStyle = state.fg;
-    ctx.font = `${state.fontSize}px "Courier New", Consolas, monospace`;
+    ctx.font = `${exportFontSize}px "Courier New", Consolas, monospace`;
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
 
@@ -664,6 +706,7 @@
       state.brushSize = saved.brushSize || 1;
       state.cells = saved.cells;
       state.referenceVisible = !!saved.referenceVisible;
+      state.exportPreset = saved.exportPreset || null;
 
       el.colsInput.value = state.cols;
       el.rowsInput.value = state.rows;
@@ -674,6 +717,7 @@
       el.brushSizeInput.value = state.brushSize;
       if (saved.referenceOpacity) el.referenceOpacityInput.value = saved.referenceOpacity;
       if (saved.referenceFit) el.referenceFitInput.value = saved.referenceFit;
+      if (saved.wallpaperPreset) el.wallpaperPresetInput.value = saved.wallpaperPreset;
     } else {
       state.cols = Number(el.colsInput.value);
       state.rows = Number(el.rowsInput.value);
