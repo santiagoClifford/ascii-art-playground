@@ -8,150 +8,173 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>ASCII Art Playground</h1>
-    <p class="subtitle">Dibuja, escribe y posiciona caracteres. Exporta como texto o PNG.</p>
-  </header>
+    <div class="topbar-title">
+      <h1>ASCII Art Playground</h1>
+      <span class="autosave-badge" title="Tu progreso se guarda automáticamente en este navegador">💾 Guardado automático</span>
+    </div>
 
-  <main class="layout">
-    <aside class="panel">
-      <section class="group">
-        <h2>Lienzo</h2>
-        <label>
-          Columnas
-          <input type="number" id="colsInput" min="4" max="200" value="60" />
-        </label>
-        <label>
-          Filas
-          <input type="number" id="rowsInput" min="2" max="120" value="24" />
-        </label>
-        <button id="resizeBtn">Redimensionar</button>
-
-        <label>
-          Preset de fondo de pantalla
-          <select id="wallpaperPresetInput">
-            <option value="">Personalizado</option>
-            <option value="1366x768">PC 1366×768 (16:9)</option>
-            <option value="1920x1080">PC 1920×1080 (16:9)</option>
-            <option value="1080x1080">Cuadrado 1080×1080 (1:1)</option>
-            <option value="1080x1920">Celular 1080×1920 (9:16)</option>
-          </select>
-        </label>
-        <button id="applyWallpaperBtn">📐 Aplicar preset</button>
-        <p class="hint">Ajusta las filas para conservar la proporción y fija la resolución exacta al exportar el PNG.</p>
-      </section>
-
-      <section class="group">
-        <h2>Herramienta</h2>
+    <div class="toolbar">
+      <div class="toolbar-section">
+        <span class="toolbar-label">Modo</span>
         <div class="tool-toggle">
           <button id="modeTypeBtn" class="tool-btn active" data-mode="type">✍️ Escribir</button>
           <button id="modePaintBtn" class="tool-btn" data-mode="paint">🖌️ Pintar</button>
           <button id="modeEraseBtn" class="tool-btn" data-mode="erase">🧹 Borrar</button>
         </div>
-        <p class="hint" id="modeHint">Haz clic en una celda y escribe con el teclado. Usa las flechas para moverte. Pega (Ctrl+V) arte ASCII copiado desde otro lado.</p>
-      </section>
+      </div>
 
-      <section class="group" id="positionGroup">
-        <h2>Posición del cursor</h2>
-        <div class="position-readout">
-          <span class="position-item">Fila <strong id="posRow">1</strong> / <span id="posRowTotal">24</span></span>
-          <span class="position-item">Col <strong id="posCol">1</strong> / <span id="posColTotal">60</span></span>
-        </div>
-        <div class="position-readout">
-          <span class="position-item" id="posRowOffset">Fila: centrado</span>
-          <span class="position-item" id="posColOffset">Col: centrado</span>
-        </div>
-      </section>
-
-      <section class="group">
-        <h2>Mover contenido</h2>
-        <div class="move-grid">
-          <span></span>
-          <button id="moveUpBtn" title="Subir">▲</button>
-          <span></span>
-          <button id="moveLeftBtn" title="Izquierda">◀</button>
-          <span class="move-center-icon">✥</span>
-          <button id="moveRightBtn" title="Derecha">▶</button>
-          <span></span>
-          <button id="moveDownBtn" title="Bajar">▼</button>
-          <span></span>
-        </div>
-        <label>
-          Paso
-          <input type="number" id="moveStepInput" min="1" max="50" value="1" />
-        </label>
-        <button id="centerContentBtn">🎯 Centrar contenido</button>
-        <p class="hint">Mueve o centra todo lo que ya dibujaste/pegaste, por ejemplo para ajustar un fondo de pantalla que no quedó centrado.</p>
-      </section>
-
-      <section class="group">
-        <h2>Pincel actual</h2>
-        <div class="brush-row">
-          <input type="text" id="brushInput" maxlength="1" value="#" />
+      <div class="toolbar-section">
+        <span class="toolbar-label">Pincel</span>
+        <div class="toolbar-controls">
+          <input type="text" id="brushInput" maxlength="1" value="#" title="Carácter del pincel" />
           <span class="brush-preview" id="brushPreview">#</span>
+          <input type="number" id="brushSizeInput" min="1" max="12" value="1" title="Tamaño del pincel" />
         </div>
-        <label>
-          Tamaño del pincel
-          <input type="number" id="brushSizeInput" min="1" max="12" value="1" />
-        </label>
-        <p class="hint">Aplica al pintar y borrar (clic, arrastre y líneas con Shift).</p>
-        <div class="palette" id="palette"></div>
-      </section>
+      </div>
 
-      <section class="group">
-        <h2>Imagen de referencia</h2>
-        <input type="file" id="referenceInput" accept="image/*" />
-        <label>
-          Opacidad
-          <input type="range" id="referenceOpacityInput" min="5" max="90" value="35" />
-        </label>
-        <label>
-          Ajuste
-          <select id="referenceFitInput">
-            <option value="contain">Contener</option>
-            <option value="cover">Cubrir</option>
-            <option value="stretch">Estirar</option>
-          </select>
-        </label>
-        <button id="removeReferenceBtn">🗑️ Quitar imagen</button>
-        <p class="hint">Se muestra detrás del lienzo como guía; no se incluye al exportar.</p>
-      </section>
-
-      <section class="group">
-        <h2>Apariencia</h2>
-        <label>
-          Tamaño de fuente (px)
-          <input type="range" id="fontSizeInput" min="8" max="32" value="16" />
-        </label>
-        <label>
-          Color de texto
-          <input type="color" id="fgColorInput" value="#00ff66" />
-        </label>
-        <label>
-          Color de fondo
-          <input type="color" id="bgColorInput" value="#0b0f14" />
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" id="transparentBgInput" />
-          Fondo transparente en PNG
-        </label>
-      </section>
-
-      <section class="group">
-        <h2>Acciones</h2>
-        <div class="actions-row">
-          <button id="undoBtn" title="Deshacer">↩️ Deshacer</button>
-          <button id="redoBtn" title="Rehacer">↪️ Rehacer</button>
+      <div class="toolbar-section">
+        <span class="toolbar-label">Historial</span>
+        <div class="toolbar-controls">
+          <button id="undoBtn" class="icon-btn" title="Deshacer (Ctrl+Z)">↩️</button>
+          <button id="redoBtn" class="icon-btn" title="Rehacer (Ctrl+Shift+Z)">↪️</button>
+          <button id="clearBtn" class="icon-btn danger" title="Limpiar lienzo">🗑️</button>
         </div>
-        <button id="clearBtn" class="danger">🗑️ Limpiar lienzo</button>
-        <p class="hint">💾 Tu progreso se guarda automáticamente en este navegador.</p>
-      </section>
+      </div>
 
-      <section class="group">
-        <h2>Exportar</h2>
-        <button id="copyTextBtn">📋 Copiar como texto</button>
-        <button id="downloadTxtBtn">⬇️ Descargar .txt</button>
-        <button id="downloadPngBtn">🖼️ Descargar .png</button>
-      </section>
+      <div class="toolbar-section toolbar-section-grow">
+        <span class="toolbar-label">Exportar</span>
+        <div class="toolbar-controls">
+          <button id="copyTextBtn">📋 Copiar</button>
+          <button id="downloadTxtBtn">⬇️ .txt</button>
+          <button id="downloadPngBtn">🖼️ .png</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="hint hint-mode" id="modeHint">Haz clic en una celda y escribe con el teclado. Usa las flechas para moverte. Pega (Ctrl+V) arte ASCII copiado desde otro lado.</p>
+  </header>
+
+  <main class="layout">
+    <aside class="panel">
+      <details class="group" open>
+        <summary>📐 Lienzo</summary>
+        <div class="group-body">
+          <div class="field-row">
+            <label class="field">
+              <span>Columnas</span>
+              <input type="number" id="colsInput" min="4" max="200" value="60" />
+            </label>
+            <label class="field">
+              <span>Filas</span>
+              <input type="number" id="rowsInput" min="2" max="120" value="24" />
+            </label>
+          </div>
+          <button id="resizeBtn">Redimensionar</button>
+
+          <div class="divider"></div>
+
+          <label class="field">
+            <span>Preset de fondo de pantalla</span>
+            <select id="wallpaperPresetInput">
+              <option value="">Personalizado</option>
+              <option value="1366x768">PC 1366×768 (16:9)</option>
+              <option value="1920x1080">PC 1920×1080 (16:9)</option>
+              <option value="1080x1080">Cuadrado 1080×1080 (1:1)</option>
+              <option value="1080x1920">Celular 1080×1920 (9:16)</option>
+            </select>
+          </label>
+          <button id="applyWallpaperBtn">Aplicar preset</button>
+          <p class="hint">Ajusta las filas a la proporción elegida y fija la resolución exacta del PNG.</p>
+        </div>
+      </details>
+
+      <details class="group" open>
+        <summary>✥ Composición</summary>
+        <div class="group-body">
+          <div class="move-grid">
+            <span></span>
+            <button id="moveUpBtn" title="Subir">▲</button>
+            <span></span>
+            <button id="moveLeftBtn" title="Izquierda">◀</button>
+            <span class="move-center-icon">✥</span>
+            <button id="moveRightBtn" title="Derecha">▶</button>
+            <span></span>
+            <button id="moveDownBtn" title="Bajar">▼</button>
+            <span></span>
+          </div>
+          <label class="field">
+            <span>Paso (celdas)</span>
+            <input type="number" id="moveStepInput" min="1" max="50" value="1" />
+          </label>
+          <button id="centerContentBtn">🎯 Centrar contenido</button>
+
+          <div id="positionGroup">
+            <div class="divider"></div>
+            <span class="field-title">Cursor</span>
+            <div class="position-readout">
+              <span class="position-item">Fila <strong id="posRow">1</strong> / <span id="posRowTotal">24</span></span>
+              <span class="position-item">Col <strong id="posCol">1</strong> / <span id="posColTotal">60</span></span>
+            </div>
+            <div class="position-readout">
+              <span class="position-item" id="posRowOffset">Fila: centrado</span>
+              <span class="position-item" id="posColOffset">Col: centrado</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="group">
+        <summary>⌨️ Paleta de caracteres</summary>
+        <div class="group-body">
+          <div class="palette" id="palette"></div>
+          <p class="hint">Elige un carácter para el pincel. También puedes escribirlo en la barra superior.</p>
+        </div>
+      </details>
+
+      <details class="group">
+        <summary>🎨 Estilo</summary>
+        <div class="group-body">
+          <label class="field">
+            <span>Tamaño de fuente</span>
+            <input type="range" id="fontSizeInput" min="8" max="32" value="16" />
+          </label>
+          <div class="field-row">
+            <label class="field">
+              <span>Texto</span>
+              <input type="color" id="fgColorInput" value="#00ff66" />
+            </label>
+            <label class="field">
+              <span>Fondo</span>
+              <input type="color" id="bgColorInput" value="#0b0f14" />
+            </label>
+          </div>
+          <label class="checkbox-label">
+            <input type="checkbox" id="transparentBgInput" />
+            <span>Fondo transparente en PNG</span>
+          </label>
+        </div>
+      </details>
+
+      <details class="group">
+        <summary>🖼️ Imagen de referencia</summary>
+        <div class="group-body">
+          <input type="file" id="referenceInput" accept="image/*" />
+          <label class="field">
+            <span>Opacidad</span>
+            <input type="range" id="referenceOpacityInput" min="5" max="90" value="35" />
+          </label>
+          <label class="field">
+            <span>Ajuste</span>
+            <select id="referenceFitInput">
+              <option value="contain">Contener</option>
+              <option value="cover">Cubrir</option>
+              <option value="stretch">Estirar</option>
+            </select>
+          </label>
+          <button id="removeReferenceBtn">Quitar imagen</button>
+          <p class="hint">Se muestra detrás del lienzo como guía; no se incluye al exportar.</p>
+        </div>
+      </details>
     </aside>
 
     <section class="canvas-wrap">

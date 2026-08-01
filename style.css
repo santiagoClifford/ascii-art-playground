@@ -20,21 +20,67 @@ body {
   color: var(--text);
 }
 
+/* ---- Top bar ---- */
+
 .topbar {
-  padding: 20px 24px 8px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
+  background: var(--panel-bg);
+}
+
+.topbar-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .topbar h1 {
-  margin: 0 0 4px;
-  font-size: 22px;
+  margin: 0;
+  font-size: 17px;
 }
 
-.subtitle {
-  margin: 0 0 12px;
+.autosave-badge {
+  font-size: 11px;
   color: var(--muted);
-  font-size: 14px;
 }
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: flex-end;
+}
+
+.toolbar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.toolbar-section-grow {
+  margin-left: auto;
+}
+
+.toolbar-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hint-mode {
+  margin-top: 10px;
+  max-width: 90ch;
+}
+
+/* ---- Layout ---- */
 
 .layout {
   display: flex;
@@ -44,54 +90,130 @@ body {
 }
 
 .panel {
-  width: 280px;
+  width: 260px;
   flex-shrink: 0;
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-height: calc(100vh - 120px);
+  gap: 8px;
+  max-height: calc(100vh - 190px);
   overflow-y: auto;
 }
 
-.group h2 {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  margin: 0 0 8px;
+/* ---- Collapsible groups ---- */
+
+.group {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.group label {
+.group summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  user-select: none;
+  list-style: none;
+}
+
+.group summary::-webkit-details-marker {
+  display: none;
+}
+
+.group summary::after {
+  content: "▸";
+  float: right;
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+
+.group[open] summary::after {
+  content: "▾";
+}
+
+.group summary:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.group-body {
+  padding: 0 12px 12px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0;
+}
+
+/* ---- Fields ---- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  flex: 1;
+}
+
+.field-row {
+  display: flex;
   gap: 8px;
-  font-size: 13px;
-  margin-bottom: 8px;
+}
+
+.field-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
 }
 
 .checkbox-label {
-  justify-content: flex-start !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
 }
 
 input[type="number"],
 input[type="text"],
-input[type="color"] {
+input[type="color"],
+select,
+input[type="file"] {
   background: var(--bg);
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 6px;
-  padding: 4px 8px;
-  width: 90px;
+  padding: 6px 8px;
+  font-size: 13px;
+  width: 100%;
+}
+
+input[type="file"] {
+  font-size: 11px;
+  padding: 6px;
 }
 
 input[type="range"] {
-  flex: 1;
+  width: 100%;
+  accent-color: var(--accent);
 }
+
+input[type="color"] {
+  padding: 2px;
+  height: 32px;
+  cursor: pointer;
+}
+
+/* ---- Buttons ---- */
 
 button {
   cursor: pointer;
@@ -99,30 +221,44 @@ button {
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 13px;
+  padding: 7px 10px;
+  font-size: 12px;
   width: 100%;
+  white-space: nowrap;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   border-color: var(--accent);
 }
 
-button.danger:hover {
+button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+button.danger:hover:not(:disabled) {
   border-color: var(--danger);
   color: var(--danger);
 }
 
+.icon-btn {
+  width: 34px;
+  padding: 7px 0;
+  text-align: center;
+}
+
+.toolbar-controls button {
+  width: auto;
+}
+
 .tool-toggle {
   display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 4px;
 }
 
 .tool-btn {
-  flex: 1;
-  padding: 8px 4px;
-  font-size: 12px;
+  width: auto;
+  padding: 7px 12px;
 }
 
 .tool-btn.active {
@@ -130,73 +266,22 @@ button.danger:hover {
   background: rgba(79, 140, 255, 0.15);
 }
 
-.hint {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 0;
-  line-height: 1.4;
-}
-
-.position-readout {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-
-.position-item {
-  flex: 1;
-}
-
-.position-item strong {
-  color: var(--text);
-  font-size: 13px;
-}
-
-.position-item.centered {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.move-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.move-grid button {
-  padding: 8px 0;
-  font-size: 14px;
-}
-
-.move-center-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--muted);
-  font-size: 16px;
-}
-
-.brush-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
+/* ---- Brush ---- */
 
 #brushInput {
-  width: 50px;
+  width: 40px;
   text-align: center;
   font-family: "Courier New", monospace;
-  font-size: 16px;
+  font-size: 15px;
+}
+
+#brushSizeInput {
+  width: 52px;
 }
 
 .brush-preview {
   font-family: "Courier New", monospace;
-  font-size: 20px;
+  font-size: 17px;
   width: 32px;
   height: 32px;
   display: flex;
@@ -205,6 +290,7 @@ button.danger:hover {
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--bg);
+  flex-shrink: 0;
 }
 
 .palette {
@@ -216,26 +302,65 @@ button.danger:hover {
 .palette button {
   padding: 6px 0;
   font-family: "Courier New", monospace;
-  font-size: 14px;
+  font-size: 13px;
   width: auto;
 }
 
-.actions-row {
+/* ---- Move controls ---- */
+
+.move-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.move-grid button {
+  padding: 7px 0;
+  font-size: 13px;
+}
+
+.move-center-icon {
   display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 15px;
 }
 
-.actions-row button {
-  width: auto;
+/* ---- Position readout ---- */
+
+.position-readout {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.position-item {
   flex: 1;
 }
 
-#downloadTxtBtn,
-#downloadPngBtn,
-#copyTextBtn {
-  margin-bottom: 8px;
+.position-item strong {
+  color: var(--text);
+  font-size: 12px;
 }
+
+.position-item.centered {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---- Hints ---- */
+
+.hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ---- Canvas ---- */
 
 .canvas-wrap {
   flex: 1;
@@ -243,7 +368,6 @@ button.danger:hover {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 16px;
 }
 
 .canvas-stage {
