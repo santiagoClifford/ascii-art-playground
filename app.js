@@ -57,6 +57,7 @@
     history: [],
     historyIndex: -1,
     referenceVisible: false,
+    lastPaintPoint: null,
   };
 
   const STORAGE_KEY = "ascii-art-playground:state:v1";
@@ -250,8 +251,8 @@
     });
     const hints = {
       type: "Haz clic en una celda y escribe con el teclado. Usa las flechas para moverte. Pega (Ctrl+V) arte ASCII copiado desde otro lado.",
-      paint: "Haz clic o arrastra sobre el lienzo para pintar con el pincel actual.",
-      erase: "Haz clic o arrastra sobre el lienzo para borrar (espacio en blanco).",
+      paint: "Haz clic o arrastra para pintar. Mantén Shift y haz clic para trazar una línea recta desde el último punto.",
+      erase: "Haz clic o arrastra para borrar. Mantén Shift y haz clic para borrar en línea recta desde el último punto.",
     };
     el.modeHint.textContent = hints[mode];
     document.getElementById("positionGroup").style.display = mode === "type" ? "" : "none";
@@ -290,6 +291,32 @@
     setCell(r, c, ch);
   }
 
+  function paintLine(from, to) {
+    let x0 = from.c;
+    let y0 = from.r;
+    const x1 = to.c;
+    const y1 = to.r;
+    const dx = Math.abs(x1 - x0);
+    const sx = x0 < x1 ? 1 : -1;
+    const dy = -Math.abs(y1 - y0);
+    const sy = y0 < y1 ? 1 : -1;
+    let err = dx + dy;
+
+    while (true) {
+      paintAt(y0, x0);
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = 2 * err;
+      if (e2 >= dy) {
+        err += dy;
+        x0 += sx;
+      }
+      if (e2 <= dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
+  }
+
   // ---- Event wiring ----
 
   el.grid.addEventListener("mousedown", (e) => {
@@ -300,9 +327,14 @@
 
     if (state.mode === "type") {
       moveCursor(r, c);
+    } else if (e.shiftKey && state.lastPaintPoint) {
+      paintLine(state.lastPaintPoint, { r, c });
+      state.lastPaintPoint = { r, c };
+      pushHistory();
     } else {
       state.isMouseDown = true;
       paintAt(r, c);
+      state.lastPaintPoint = { r, c };
     }
     el.grid.focus();
   });
@@ -315,6 +347,7 @@
     const r = Number(target.dataset.r);
     const c = Number(target.dataset.c);
     paintAt(r, c);
+    state.lastPaintPoint = { r, c };
   });
 
   window.addEventListener("mouseup", () => {
